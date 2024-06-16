@@ -5,6 +5,9 @@ import org.w3c.dom.Node;
 public class ArbolBinario {
     private Nodo raiz;
 
+    public ArbolBinario() {
+    }
+
     public ArbolBinario(Nodo raiz) {
         this.raiz = raiz;
     }
@@ -34,9 +37,19 @@ public class ArbolBinario {
 
     private Nodo agregarNodoRecursivo(Nodo nodoActual, int dato) {
         if (dato < nodoActual.getDato()) {
-            return agregarNodoRecursivo(nodoActual.getIzquierda(), dato);
+            if (nodoActual.getIzquierda() == null) {
+                nodoActual.setIzquierda(new Nodo(dato, null, null));
+                return nodoActual.getIzquierda();
+            } else {
+                return agregarNodoRecursivo(nodoActual.getIzquierda(), dato);
+            }
         } else {
-            return agregarNodoRecursivo(nodoActual.getDerecha(), dato);
+            if (nodoActual.getDerecha() == null) {
+                nodoActual.setDerecha(new Nodo(dato, null, null));
+                return nodoActual.getDerecha();
+            } else {
+                return agregarNodoRecursivo(nodoActual.getDerecha(), dato);
+            }
         }
     }
 
@@ -104,29 +117,59 @@ public class ArbolBinario {
         return nodoActual;
     }
 
-    public boolean vacio () {
+    public boolean vacio() {
         return raiz == null;
     }
 
-    public String imprimirPreOrden (Nodo n) {
-        if (n == null) {
-            return "";
-        }
-        return n.getDato() + " " + imprimirPreOrden(n.getIzquierda()) + imprimirPreOrden(n.getDerecha());
+    public boolean esHoja(Nodo nodo) {
+        Nodo n = buscar(nodo.getDato());
+        return n.getIzquierda() == null && n.getDerecha() == null;
     }
 
-    public String imprimirOrden (Nodo n) {
-        if (n == null) {
-            return "";
+    // Altura o níveles del árbol
+    public int altura(Nodo nodo) {
+        if (raiz == null) {
+            return -1;
+        } else {
+            int alturaDerecha = altura(nodo.getDerecha());
+            int alturaIzquierda = altura(nodo.getIzquierda());
+            return Math.max(alturaDerecha, alturaIzquierda) + 1;
         }
-        return imprimirPreOrden(n.getIzquierda()) + " " + n.getDato() + imprimirPreOrden(n.getDerecha());
     }
 
-    public String imprimirPostOrden (Nodo n) {
-        if (n == null) {
-            return "";
+    public int minimo(Nodo raiz) {
+        while (raiz.getIzquierda() != null) {
+            raiz = raiz.getIzquierda();
         }
-        return imprimirPreOrden(n.getIzquierda()) + " " + imprimirPreOrden(n.getDerecha()) + n.getDato();
+        return raiz.getDato();
+    }
+
+    public int maximo(Nodo raiz) {
+        while (raiz.getDerecha() != null) {
+            raiz = raiz.getDerecha();
+        }
+        return raiz.getDato();
+
+    }
+
+    private int cantidadHojas(Nodo nodo) {
+        if (nodo == null) {
+            return 0;
+        } else {
+            if (esHoja(nodo)) {
+                return 1;
+            } else {
+                return cantidadHojas(nodo.getIzquierda()) + cantidadHojas(nodo.getDerecha());
+            }
+        }
+    }
+
+    public int cantidadNodos(Nodo nodo) {
+        if (nodo == null) {
+            return 0;
+        } else {
+            return 1 + cantidadNodos(nodo.getIzquierda()) + cantidadNodos(nodo.getDerecha());
+        }
     }
 
     private Nodo sucesorEnOrden(Nodo nodo) {
@@ -135,4 +178,35 @@ public class ArbolBinario {
         }
         return nodo;
     }
+
+    public String imprimirPreOrden(Nodo n) {
+        if (n == null) {
+            return "";
+        }
+        String resultado = n.getDato() + " ";
+        resultado += imprimirPreOrden(n.getIzquierda());
+        resultado += imprimirPreOrden(n.getDerecha());
+        return resultado;
+    }
+
+    public String imprimirOrden(Nodo n) {
+        if (n == null) {
+            return "";
+        }
+        String resultado = imprimirOrden(n.getIzquierda());
+        resultado += n.getDato() + " ";
+        resultado += imprimirOrden(n.getDerecha());
+        return resultado;
+    }
+
+    public String imprimirPostOrden(Nodo n) {
+        if (n == null) {
+            return "";
+        }
+        String resultado = imprimirPostOrden(n.getIzquierda());
+        resultado += imprimirPostOrden(n.getDerecha());
+        resultado += n.getDato() + " ";
+        return resultado;
+    }
+
 }
