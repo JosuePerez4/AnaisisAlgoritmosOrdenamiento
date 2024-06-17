@@ -1,8 +1,9 @@
 package Arbol_Nario;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
+import java.util.Queue;
 
 public class ArbolNArio {
     private Nodo raiz;
@@ -23,7 +24,7 @@ public class ArbolNArio {
         if (raiz == null) {
             raiz = new Nodo(dato);
         } else {
-
+            Queue <Nodo> colita = new LinkedList<Nodo>();
         }
     }
 
