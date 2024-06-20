@@ -13,11 +13,19 @@ public class Arbol_Avl {
         this.raiz = raiz;
     }
 
+    public int altura(Nodo nodo) { // *! Complejidad: O(1)
+        return (nodo == null) ? -1 : nodo.getAltura();
+    }
+
+    public int balance(Nodo nodo) { // *! Complejidad: O(1)
+        return (nodo == null) ? 0 : altura(nodo.getIzquierda()) - altura(nodo.getDerecha());
+    }
+
     public void insertar(int clave) {
         raiz = insertar(clave, raiz);
     }
 
-    private Nodo insertar(int clave, Nodo nodo) {
+    private Nodo insertar(int clave, Nodo nodo) { // *! Complejidad: O(Log n)
         if (nodo == null) {
             return new Nodo(clave);
         }
@@ -30,29 +38,23 @@ public class Arbol_Avl {
             return nodo;
         }
 
-        // Revisa el balanceo
         nodo.setAltura(1 + Math.max(altura(nodo.getIzquierda()), altura(nodo.getDerecha())));
 
         int balance = balance(nodo);
 
-        // Casos de rotaciones
-        // Caso LL
         if (balance > 1 && clave < nodo.getIzquierda().getClave()) {
             return rotacionDerecha(nodo);
         }
 
-        // Caso RR
         if (balance < -1 && clave > nodo.getDerecha().getClave()) {
             return rotacionIzquierda(nodo);
         }
 
-        // Caso LR
         if (balance > 1 && clave > nodo.getIzquierda().getClave()) {
             nodo.setIzquierda(rotacionIzquierda(nodo.getIzquierda()));
             return rotacionDerecha(nodo);
         }
 
-        // Caso RL
         if (balance < -1 && clave < nodo.getDerecha().getClave()) {
             nodo.setDerecha(rotacionDerecha(nodo.getDerecha()));
             return rotacionIzquierda(nodo);
@@ -61,132 +63,179 @@ public class Arbol_Avl {
         return nodo;
     }
 
-    public Nodo eliminar(int clave) {
-        return eliminar(this.raiz, clave);
+    public void eliminar(int clave) {
+        raiz = eliminar(this.raiz, clave);
     }
 
-    private Nodo eliminar(Nodo raiz, int clave) {
-        if (raiz == null)
-            return raiz;
+    private Nodo eliminar(Nodo nodo, int clave) { // *! Complejidad: O(Log n)
+        if (nodo == null) {
+            return nodo;
+        }
 
-        if (clave < raiz.getClave())
-            raiz.setIzquierda(eliminar(raiz.getIzquierda(), clave));
-        else if (clave > raiz.getClave())
-            raiz.setDerecha(eliminar(raiz.getDerecha(), clave));
-        else {
-            if ((raiz.getIzquierda() == null) || (raiz.getDerecha() == null)) {
-                Nodo temp = null;
-                if (temp == raiz.getIzquierda())
-                    temp = raiz.getDerecha();
-                else
-                    temp = raiz.getIzquierda();
+        if (clave < nodo.getClave()) {
+            nodo.setIzquierda(eliminar(nodo.getIzquierda(), clave));
+        } else if (clave > nodo.getClave()) {
+            nodo.setDerecha(eliminar(nodo.getDerecha(), clave));
+        } else {
+            if ((nodo.getIzquierda() == null) || (nodo.getDerecha() == null)) {
+                Nodo temp = (nodo.getIzquierda() != null) ? nodo.getIzquierda() : nodo.getDerecha();
 
                 if (temp == null) {
-                    temp = raiz;
-                    raiz = null;
+                    nodo = null;
                 } else {
-                    raiz = temp;
+                    nodo = temp;
                 }
             } else {
-                Nodo temp = obtenerMinimo(raiz.getDerecha());
-                raiz.setClave(temp.getClave());
-                raiz.setDerecha(eliminar(raiz.getDerecha(), temp.getClave()));
+                Nodo temp = encontrarMinimo(nodo.getDerecha());
+                nodo.setClave(temp.getClave());
+                nodo.setDerecha(eliminar(nodo.getDerecha(), temp.getClave()));
             }
         }
 
-        if (raiz == null)
-            return raiz;
-
-        raiz.setAltura(Math.max(altura(raiz.getIzquierda()), altura(raiz.getDerecha())) + 1);
-
-        int balance = balance(raiz);
-
-        if (balance > 1 && balance(raiz.getIzquierda()) >= 0)
-            return rotacionDerecha(raiz);
-
-        if (balance > 1 && balance(raiz.getIzquierda()) < 0) {
-            raiz.setIzquierda(rotacionIzquierda(raiz.getIzquierda()));
-            return rotacionDerecha(raiz);
+        if (nodo == null) {
+            return nodo;
         }
 
-        if (balance < -1 && balance(raiz.getDerecha()) <= 0)
-            return rotacionIzquierda(raiz);
+        nodo.setAltura(Math.max(altura(nodo.getIzquierda()), altura(nodo.getDerecha())) + 1);
 
-        if (balance < -1 && balance(raiz.getDerecha()) > 0) {
-            raiz.setDerecha(rotacionDerecha(raiz.getDerecha()));
-            return rotacionIzquierda(raiz);
+        int balance = balance(nodo);
+
+        if (balance > 1 && balance(nodo.getIzquierda()) >= 0) {
+            return rotacionDerecha(nodo);
         }
 
-        return raiz;
+        if (balance > 1 && balance(nodo.getIzquierda()) < 0) {
+            nodo.setIzquierda(rotacionIzquierda(nodo.getIzquierda()));
+            return rotacionDerecha(nodo);
+        }
+
+        if (balance < -1 && balance(nodo.getDerecha()) <= 0) {
+            return rotacionIzquierda(nodo);
+        }
+
+        if (balance < -1 && balance(nodo.getDerecha()) > 0) {
+            nodo.setDerecha(rotacionDerecha(nodo.getDerecha()));
+            return rotacionIzquierda(nodo);
+        }
+
+        return nodo;
     }
 
-    private Nodo obtenerMinimo(Nodo nodo) {
-        Nodo actual = nodo;
-        while (actual.getIzquierda() != null)
-            actual = actual.getIzquierda();
-        return actual;
+    public Nodo buscar(int clave) {
+        return buscar(raiz, clave);
     }
 
-    private Nodo rotacionDerecha(Nodo y) {
+    private Nodo buscar(Nodo nodo, int clave) { // *! Complejidad: O(Log n)
+        if (nodo == null || nodo.getClave() == clave) {
+            return nodo;
+        }
+        if (clave < nodo.getClave()) {
+            return buscar(nodo.getIzquierda(), clave);
+        } else {
+            return buscar(nodo.getDerecha(), clave);
+        }
+    }
+
+    private Nodo rotacionDerecha(Nodo y) { // *! Complejidad: O(1)
         Nodo x = y.getIzquierda();
-        Nodo aux = x.getDerecha();
+        Nodo T2 = x.getDerecha();
 
-        // Realizo la rotación
         x.setDerecha(y);
-        y.setIzquierda(aux);
+        y.setIzquierda(T2);
 
-        // Actualizar las alturas
         y.setAltura(Math.max(altura(y.getIzquierda()), altura(y.getDerecha())) + 1);
         x.setAltura(Math.max(altura(x.getIzquierda()), altura(x.getDerecha())) + 1);
 
-        // Retornamos la nueva raíz
         return x;
     }
 
-    private Nodo rotacionIzquierda(Nodo x) {
+    private Nodo rotacionIzquierda(Nodo x) { // *! Complejidad: O(1)
         Nodo y = x.getDerecha();
-        Nodo aux = y.getIzquierda();
+        Nodo T2 = y.getIzquierda();
 
-        // Realizo la rotación
         y.setIzquierda(x);
-        x.setDerecha(aux);
+        x.setDerecha(T2);
 
-        // Actualizar las alturas
         x.setAltura(Math.max(altura(x.getIzquierda()), altura(x.getDerecha())) + 1);
         y.setAltura(Math.max(altura(y.getIzquierda()), altura(y.getDerecha())) + 1);
 
-        // Retornamos la nueva raíz
         return y;
     }
 
-    public Nodo rotacionDerechaIzquierda(Nodo x) {
+    public Nodo rotacionDerechaIzquierda(Nodo x) { // *! Complejidad: O(1)
         x.setDerecha(rotacionDerecha(x.getDerecha()));
         return rotacionIzquierda(x);
     }
 
-    public Nodo rotacionIzquierdaDerecha(Nodo x) {
+    public Nodo rotacionIzquierdaDerecha(Nodo x) { // *! Complejidad: O(1)
         x.setIzquierda(rotacionIzquierda(x.getIzquierda()));
         return rotacionDerecha(x);
     }
 
-    public int altura(Nodo nodo) {
-        return nodo == null ? -1 : nodo.getAltura();
+    public Nodo obtenerMinimo() {
+        return encontrarMinimo(raiz);
     }
 
-    public int balance(Nodo nodo) {
-        return nodo == null ? 0 : balance(nodo.getIzquierda()) - balance(nodo.getDerecha());
+    private Nodo encontrarMinimo(Nodo nodo) { // *! Complejidad: O(Log n)
+        if (nodo == null) {
+            return null;
+        }
+        while (nodo.getIzquierda() != null) {
+            nodo = nodo.getIzquierda();
+        }
+        return nodo;
     }
 
-    // Métodos de impresión
-    public void imprimirArbol() {
-        imprimirArbol(raiz, "", true);
+    public Nodo encontrarMaximo() {
+        return encontrarMaximo(raiz);
     }
 
-    private void imprimirArbol(Nodo nodo, String prefix, boolean isTail) {
+    private Nodo encontrarMaximo(Nodo nodo) { // *! Complejidad: O(Log n)
+        if (nodo == null) {
+            return null;
+        }
+        while (nodo.getDerecha() != null) {
+            nodo = nodo.getDerecha();
+        }
+        return nodo;
+    }
+
+    public void inorden() {
+        inorden(raiz);
+        System.out.println();
+    }
+
+    private void inorden(Nodo nodo) { // *! Complejidad: O(n)
         if (nodo != null) {
-            System.out.println(prefix + (isTail ? "└── " : "├── ") + nodo.getClave());
-            imprimirArbol(nodo.getDerecha(), prefix + (isTail ? "    " : "│   "), false);
-            imprimirArbol(nodo.getIzquierda(), prefix + (isTail ? "    " : "│   "), true);
+            inorden(nodo.getIzquierda());
+            System.out.print(nodo.getClave() + " ");
+            inorden(nodo.getDerecha());
+        }
+    }
+
+    public void preorden() {
+        preorden(raiz);
+        System.out.println();
+    }
+
+    private void preorden(Nodo nodo) { // *! Complejidad: O(n)
+        if (nodo != null) {
+            System.out.print(nodo.getClave() + " ");
+            preorden(nodo.getIzquierda());
+            preorden(nodo.getDerecha());
+        }
+    }
+
+    public void postorden() {
+        postorden(raiz);
+        System.out.println();
+    }
+
+    private void postorden(Nodo nodo) { // *! Complejidad: O(n)
+        if (nodo != null) {
+            postorden(nodo.getIzquierda());
+            postorden(nodo.getDerecha());
+            System.out.print(nodo.getClave() + " ");
         }
     }
 }
